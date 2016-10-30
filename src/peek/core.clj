@@ -33,3 +33,17 @@
   [key & {:keys [delta tags sample] :or {delta 1 tags {} sample 1.0}}]
   (go (d/submit-counter key delta tags sample))
   nil)
+
+(defmacro time!
+  "Wraps `form` in a Datadog timing - starts the timer, executes the code in 
+   `form`, submits the execution time as a timing packet, and then returns the
+  result of `form`."
+  [key tags sample-rate form]
+  `(let [start# (System/currentTimeMillis)
+         res# (eval (quote ~form))]
+     (d/submit-timing
+       (quote ~key)
+       (- (System/currentTimeMillis) start#)
+       (quote ~tags)
+       (quote ~sample-rate))
+     res#))
