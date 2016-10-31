@@ -14,6 +14,7 @@
    Defaults:
    :tags {}, :sample 1.0"
   [key value & {:keys [tags sample] :or {tags {} sample 1.0}}]
+  (go (d/submit "g" key value tags sample))
   nil)
 
 (defn timing!
@@ -29,7 +30,7 @@
    Defaults:
    :tags {}, :sample 1.0"
   [key timing & {:keys [tags sample] :or {tags {} sample 1.0}}]
-  (go (d/submit-timing key timing tags sample))
+  (go (d/submit "ms" key timing tags sample))
   nil)
 
 (defn increment!
@@ -45,7 +46,7 @@
    Defaults:
    :delta 1, :tags {}, :sample 1.0"
   [key & {:keys [delta tags sample] :or {delta 1 tags {} sample 1.0}}]
-  (go (d/submit-counter key delta tags sample))
+  (go (d/submit "c" key delta tags sample))
   nil)
 
 (defn- withtime

@@ -40,14 +40,9 @@
         rate (str "@" sample-rate)]
     (join "|" (filter (complement empty?) [kv type rate tags]))))
 
-(defn submit-counter
-  "Creates a UDP packet for a Datadoc counter and send it to the collector."
-  [key delta tags sample-rate]
-  (let [packet (build-packet "c" key delta tags sample-rate)]
-    (sampled-send packet sample-rate)))
-
-(defn submit-timing
-  "Creates a UDP packet for a Datadog timing and sends it to the collector."
-  [key timing tags sample-rate]
-  (let [packet (build-packet "ms" key timing tags sample-rate)]
-    (sampled-send packet sample-rate)))
+(defn submit
+  "Builds a UDP payload for the metric and submits it over UDP to the
+   DogstatsD collector."
+  [type key value tags rate]
+  (let [packet (build-packet type key value tags rate)]
+    (sampled-send packet rate)))
