@@ -2,6 +2,36 @@
   (:require [clojure.core.async :refer [go]]
             [peek.datadog :as d]))
 
+(defn datadog-set!
+  "Records `value` as a new member of the set identified by
+   `key`.  A set in Datadog is a collection of unique elements
+   of a group, such as unique visitors to a site.
+   
+   Optionally accepts an options map with keys:
+
+   :tags - A map of tags to append ot this measurement.
+   :sample - A rate (between 0.0 and 1.0) at which to sample this metric."
+  [key value & {:keys [tags sample] :or {tags {} sample 1.0}}]
+  (go (d/submit "s" key value tags sample))
+  nil)
+
+(defn histogram!
+  "Records the current `value` of the metric identified by `key` as
+   a value in a statistical distribution.  Histograms in Datadog 
+   track the average, min, max, median, 95th percentile, and count.  
+   Executes asynchronously and immediately returns `nil`.
+
+   Optionally accepts an options map with keys:
+
+   :tags - A map of tags to append to this measurement.
+   :sample - A rate (between 0.0 and 1.0) at which to sample this metric.
+
+   Defaults:
+   :tags {}, :sample 1.0"
+  [key value & {:keys [tags sample] :or {tags {} sample 1.0}}]
+  (go (d/submit "h" key value tags sample))
+  nil)
+
 (defn gauge!
   "Records the current `value` of the gauge identified by `key`.  Executes
    asynchronously and immediately returns `nil`.
@@ -9,7 +39,7 @@
    Optinally accepts an options map with keys:
 
    :tags - A map of tags to append to this measurement.
-   :sample - A rate between (0.0 and 1.0) at which to sample this gauge.
+   :sample - A rate (between 0.0 and 1.0) at which to sample this metric.
 
    Defaults:
    :tags {}, :sample 1.0"
@@ -41,7 +71,7 @@
    
    :delta - The amount by which to increment the counter.
    :tags - A map of tags to append to this measurement.
-   :sample - A rate (between 0.0 and 1.0) at which to sample this measurement.
+   :sample - A rate (between 0.0 and 1.0) at which to sample this metric.
 
    Defaults:
    :delta 1, :tags {}, :sample 1.0"
