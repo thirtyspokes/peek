@@ -2,19 +2,23 @@
   (:import [java.net DatagramSocket
             DatagramPacket
             InetSocketAddress])
-  (:require [clojure.string :refer [join]]))
+  (:require [clojure.string :refer [join]]
+            [environ.core :refer [env]]))
+
+(def datadog-host
+  (or (env :dogstatsd-host) "127.0.0.1"))
+
+(def datadog-port
+  (or (env :dogstatsd-port) "8125"))
 
 (def socket
   (DatagramSocket. 0))
 
 (defn send-udp
-  "Send a short textual message over a DatagramSocket to the specified
-  host and port. If the string is over 512 bytes long, it will be
-  truncated."
   [packet]
   (let [payload (.getBytes packet)
         length (min (alength payload) 512)
-        address (InetSocketAddress. "127.0.0.1" 8125)
+        address (InetSocketAddress. datadog-host datadog-port)
         packet (DatagramPacket. payload length address)]
     (.send socket packet)))
 
@@ -46,3 +50,37 @@
   [type key value tags rate]
   (let [packet (build-packet type key value tags rate)]
     (sampled-send packet rate)))
+
+(def datagram-keys
+  {:date_happened "d"
+   :hostname "h"
+   :aggregation_key "k"
+   :priority "p"
+   :source_type_name "s"
+   :alert_type "t"})
+
+(defn event-opts
+  [opt-map]
+  (let [non-tags (dissoc opt-map :tags)]
+    (clojure.string/join "|"
+      (map (fn [[k v]] (str (get datagram-keys k) ":" v)) non-tags))))
+
+(defn event-header
+  [title text]
+  (let [title-len (count title)
+        text-len (count text)
+        joined (str title-len "," text-len)]
+    (str "_e{" joined "}:" title "|" text)))
+
+(defn event-packet
+  [title text opt-map]
+  (let [header (event-header title text)
+        opts (event-opts opt-map)
+        tags (tag-string (:tags opt-map))]
+    (clojure.string/join "|"
+      (filter (complement empty?) [header opts tags]))))
+
+(defn submit-event
+  [title text opts]
+  (let [packet (event-packet title text opts)]
+    (send-udp packet)))

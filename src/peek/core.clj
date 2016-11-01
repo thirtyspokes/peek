@@ -2,6 +2,32 @@
   (:require [clojure.core.async :refer [go]]
             [peek.datadog :as d]))
 
+(defn event!
+  "Records a Datadog event with the supplied `text` and 
+   `title`.  Events appear in your Datadog dashboard's 
+   event stream.  Executes asynchronously and immediately
+   returns `nil`.
+
+   Optional accepts an options map with keys:
+
+   :tags - A map of tags to append to this measurement.
+   :date_happened - A POSIX timestamp for the event in seconds.
+   :hostname - A hostname for the event.
+   :aggregation_key - A key for grouping the event with others.
+   :priority - Either 'normal' or 'low'.
+   :source_type_name - A source type for the event.
+   :alert_type - One of 'info', 'success', 'warning', or 'error'.
+
+   Defaults:
+   :date_happened now, :priority 'normal', :alert_type 'info'
+   All other keys will not be sent if not supplied."
+  ([title text]
+   (go (d/submit-event title text {}))
+   nil)
+  ([title text opt-map]
+   (go (d/submit-event title text opt-map))
+   nil))
+
 (defn datadog-set!
   "Records `value` as a new member of the set identified by
    `key`.  A set in Datadog is a collection of unique elements
@@ -9,7 +35,7 @@
    
    Optionally accepts an options map with keys:
 
-   :tags - A map of tags to append ot this measurement.
+   :tags - A map of tags to append to this measurement.
    :sample - A rate (between 0.0 and 1.0) at which to sample this metric."
   [key value & {:keys [tags sample] :or {tags {} sample 1.0}}]
   (go (d/submit "s" key value tags sample))
