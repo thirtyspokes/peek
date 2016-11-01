@@ -113,12 +113,13 @@
    (withtime key tags 1.0 form))
   ([key tags sample-rate form]
    `(let [start# (System/currentTimeMillis)
-          res# (eval (quote ~form))]
-      (d/submit-timing
-        (quote ~key)
+          res# (do ~@form)]
+      (d/submit
+        "t"
+        ~key
         (- (System/currentTimeMillis) start#)
-        (quote ~tags)
-        (quote ~sample-rate))
+        ~tags
+        ~sample-rate)
       res#)))
 
 (defmacro time!
