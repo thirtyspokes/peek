@@ -113,9 +113,9 @@
    (withtime key tags 1.0 form))
   ([key tags sample-rate form]
    `(let [start# (System/currentTimeMillis)
-          res# (do ~@form)]
+          res# (eval ~form)]
       (d/submit
-        "t"
+        "ms"
         ~key
         (- (System/currentTimeMillis) start#)
         ~tags

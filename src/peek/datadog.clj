@@ -87,7 +87,7 @@
   "Builds a UDP payload for the metric and submits it over UDP to the
    DogstatsD collector."
   [type key value tags rate]
-  (let [packet (build-packet type key value tags rate)]
+  (if-let [packet (build-packet type key value tags rate)]
     (sampled-send packet rate)))
 
 (def datagram-keys
