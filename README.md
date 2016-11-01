@@ -1,14 +1,86 @@
 # peek
 
-A Clojure library designed to ... well, that part is up to you.
+A Clojure interface to DogStatsD (a StatsD-like metrics collection system created by DataDog).
 
 ## Usage
 
-FIXME
+To learn more about the DogStatsD protocol itself, check out the [official documentation at Datadog](http://docs.datadoghq.com/guides/dogstatsd/).
+
+### Configuration
+
+This library can be used without any configuration - if none is supplied, then it will default to sending metrics to 127.0.0.1:8125.  To send your metrics to a different location, use `peek.core/init`:
+
+```clojure
+;; Somewhere in your app startup:
+(ns your-app.core
+  (:require [peek.core :as stats]))
+
+(stats/init {:host "127.0.0.2" :port 3000})
+```
+
+`peek.core/init` takes an optional `:prefix` key.  If this is supplied, the string you provide will be prefixed to all of the metrics that are emitted:
+
+```clojure
+(increment! "logins.failed") ;; key is "logins.failed"
+
+(stats/init {:prefix "service-name"}
+(increment! "logins.failed") ;; key is "service-name.logins.failed"
+```
+
+### Recording Metrics
+
+All of the DogStatsD metrics are supported (except for service checks).  All of the metric functions take a key, the value to be recorded (with the exception of counters, for which the value is optional and defaults to 1 if not supplied), and optional named parameters:
+
+- :tags, a map of keywords or strings to values that will be appended to the metric and can be used as filters in Datadog.
+- :sample, a decimal number between 0.0 and 1.0 that will determine how often the metric will actually be recorded.
+
+All of the metric functions run their body in a go block, meaning that they execute on a separate thread from the call site and return `nil` immediately (with the exception of the `time!` macro, as you will see below).
+
+```clojure
+(ns your-app.core
+  (:require [peek.core :as stats]))
+
+;; Increment the logins.failed counter by 1, with the tags region:US:
+(increment! "logins.failed" :tags {:region "US"})
+
+;; Increment the same counter by 10 instead:
+(increment! "logins.failed :delta 10 :tags {:region "US"})
+
+;; Record a timing at a sample rate of 0.5 (half of the time).
+;; Timings are in milliseconds.
+(timing! "queries.select" 110 :sample 0.5)
+
+;; Set the current value of a gauge.
+(gauge! "connections.open" 10 :tags {:system "mysql"})
+
+;; Set a value for a histogram.
+(histogram! "profile.rendering" 55)
+
+;; Add an email to a set of uniques, tagged referral:true.
+(datadog-set! "visitors.unique" "example@mail.com" :tags {:referral "true"})
+
+;; Submit an event with the title "Deployment", a text description, and
+;; the alert_type of "success".  Note that for events, the last parameter
+;; is an actual options map instead of named params.
+(event! "deployment" "A deployment has finished successfully" {:alert_type "success"})
+```
+
+For ease of use, a `time!` macro is provided that will execute the Clojure code passed to it and return the result, while also emitting a timing metric as a side effect.
+
+```clojure
+;; The time! macro can also support optional tags and sample rate, but they must
+;; be supplied in that order - so if you want a non-default sample rate but no tags,
+;; you must supply an empty map for the tag parameter.
+
+;; In this example your code will execute as normal, and the execution time in milliseconds
+;; will be recorded as a side effect.
+(time! "controllers.actions.index" {:tags {:pipeline "api"}}
+  ( ... your code to handle the controller action ...))
+```
 
 ## License
 
-Copyright © 2016 FIXME
+Copyright © 2016 Ray Ashman Jr.
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.

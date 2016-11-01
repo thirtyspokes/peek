@@ -2,6 +2,23 @@
   (:require [clojure.core.async :refer [go]]
             [peek.datadog :as d]))
 
+(defn init
+  "Sets up the configuration for the metrics to be collected.  Accepts
+   an options map with the following keys:
+
+   :host - The IP address of your DogStatsD collector.
+   :port - The port (an Integer) your DogStatsD collector is listening on.
+   :prefix - A string to be preprended to the keys of all metrics that are
+    emitted.
+
+   Defaults:
+   :host \"127.0.0.1\", :port 8125, :prefix \"\""
+  [opt-map]
+  (let [host (:host opt-map "127.0.0.1")
+        port (:port opt-map 8125)
+        prefix (:prefix opt-map nil)]
+    (swap! d/config assoc :host host :port port :prefix prefix)))
+
 (defn event!
   "Records a Datadog event with the supplied `text` and 
    `title`.  Events appear in your Datadog dashboard's 

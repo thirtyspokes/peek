@@ -9,20 +9,6 @@
   ^{:doc "Holds the host/port configuration for the collector."}
   (atom {}))
 
-(defn init
-  "Sets up the configuration for the metrics to be collected.  Accepts
-   an options map with the following keys:
-
-   :host - The IP address of your DogStatsD collector.
-   :port - The port (an Integer) your DogStatsD collector is listening on.
-   :prefix - A string to be preprended to the keys of all metrics that are
-    emitted.
-
-   Defaults:
-   :host \"127.0.0.1\", :port 8125, :prefix \"\""
-  [& {:keys [host port prefix] :or {host "127.0.0.1" port 8125 prefix nil}}]
-  (swap! config assoc :host host :port port :prefix prefix))
-
 (defn dd-host
   "Returns the host from configuration, or the default."
   []
