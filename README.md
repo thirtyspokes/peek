@@ -44,7 +44,7 @@ All of the metric functions run their body in a go block, meaning that they exec
 (increment! "logins.failed" :tags {:region "US"})
 
 ;; Increment the same counter by 10 instead:
-(increment! "logins.failed :delta 10 :tags {:region "US"})
+(increment! "logins.failed" :delta 10 :tags {:region "US"})
 
 ;; Record a timing at a sample rate of 0.5 (half of the time).
 ;; Timings are in milliseconds.
@@ -68,13 +68,17 @@ All of the metric functions run their body in a go block, meaning that they exec
 For ease of use, a `time!` macro is provided that will execute the Clojure code passed to it and return the result, while also emitting a timing metric as a side effect.
 
 ```clojure
+;; In this example your code will execute as normal, and the execution time in milliseconds
+;; will be recorded as a side effect.  
+(time! "database.queries.select_all"
+  (j/query mysql-db ["SELECT * FROM table"]))
+
 ;; The time! macro can also support optional tags and sample rate, but they must
 ;; be supplied in that order - so if you want a non-default sample rate but no tags,
 ;; you must supply an empty map for the tag parameter.
 
-;; In this example your code will execute as normal, and the execution time in milliseconds
-;; will be recorded as a side effect.
-(time! "controllers.actions.index" {:tags {:pipeline "api"}}
+;; This timing will be tagged pipeline:api and sampled at a rate of 0.75.
+(time! "controllers.actions.index" {:pipeline "api"} 0.75
   ( ... your code to handle the controller action ...))
 ```
 
