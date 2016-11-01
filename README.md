@@ -82,6 +82,24 @@ For ease of use, a `time!` macro is provided that will execute the Clojure code 
   ( ... your code to handle the controller action ...))
 ```
 
+## Installation
+
+In your project.clj: 
+
+```
+[thirtyspokes/peek "1.1.0"]
+```
+
+Or if your desires are *unconventional*:
+
+```
+<dependency>
+  <groupId>thirtyspokes</groupId>
+  <artifactId>peek</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+
 ## License
 
 Copyright © 2016 Ray Ashman Jr.

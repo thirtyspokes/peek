@@ -2,8 +2,7 @@
   (:import [java.net DatagramSocket
             DatagramPacket
             InetSocketAddress])
-  (:require [clojure.string :refer [join]]
-            [environ.core :refer [env]]))
+  (:require [clojure.string :refer [join]]))
 
 (def config
   ^{:doc "Holds the host/port configuration for the collector."}
