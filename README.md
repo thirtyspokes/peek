@@ -87,7 +87,7 @@ For ease of use, a `time!` macro is provided that will execute the Clojure code 
 In your project.clj: 
 
 ```
-[thirtyspokes/peek "1.1.0"]
+[thirtyspokes/peek "1.0.0"]
 ```
 
 Or if your desires are *unconventional*:
