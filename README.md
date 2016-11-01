@@ -68,8 +68,8 @@ All of the metric functions run their body in a go block, meaning that they exec
 For ease of use, a `time!` macro is provided that will execute the Clojure code passed to it and return the result, while also emitting a timing metric as a side effect.
 
 ```clojure
-;; In this example your code will execute as normal, and the execution time in milliseconds
-;; will be recorded as a side effect.  
+;; In this example your code will execute and return rows as normal, and the execution time
+;; in milliseconds will be recorded as a side effect.
 (time! "database.queries.select_all"
   (j/query mysql-db ["SELECT * FROM table"]))
 
