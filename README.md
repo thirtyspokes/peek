@@ -46,10 +46,6 @@ All of the metric functions run their body in a go block, meaning that they exec
 ;; Increment the same counter by 10 instead:
 (increment! "logins.failed" :delta 10 :tags {:region "US"})
 
-;; Record a timing at a sample rate of 0.5 (half of the time).
-;; Timings are in milliseconds.
-(timing! "queries.select" 110 :sample 0.5)
-
 ;; Set the current value of a gauge.
 (gauge! "connections.open" 10 :tags {:system "mysql"})
 
@@ -65,7 +61,7 @@ All of the metric functions run their body in a go block, meaning that they exec
 (event! "deployment" "A deployment has finished successfully" {:alert_type "success"})
 ```
 
-For ease of use, a `time!` macro is provided that will execute the Clojure code passed to it and return the result, while also emitting a timing metric as a side effect.
+For recording timings, a `time!` macro is provided that will execute the Clojure code passed to it and return the result, while also emitting a timing metric as a side effect.
 
 ```clojure
 ;; In this example your code will execute and return rows as normal, and the execution time
