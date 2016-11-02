@@ -21,10 +21,10 @@ This library can be used without any configuration - if none is supplied, then i
 `peek.core/init` takes an optional `:prefix` key.  If this is supplied, the string you provide will be prefixed to all of the metrics that are emitted:
 
 ```clojure
-(increment! "logins.failed") ;; key is "logins.failed"
+(stats/increment! "logins.failed") ;; key is "logins.failed"
 
 (stats/init {:prefix "service-name"}
-(increment! "logins.failed") ;; key is "service-name.logins.failed"
+(stats/increment! "logins.failed") ;; key is "service-name.logins.failed"
 ```
 
 ### Recording Metrics
@@ -41,24 +41,24 @@ All of the metric functions run their body in a go block, meaning that they exec
   (:require [peek.core :as stats]))
 
 ;; Increment the logins.failed counter by 1, with the tags region:US:
-(increment! "logins.failed" :tags {:region "US"})
+(stats/increment! "logins.failed" :tags {:region "US"})
 
 ;; Increment the same counter by 10 instead:
-(increment! "logins.failed" :delta 10 :tags {:region "US"})
+(stats/increment! "logins.failed" :delta 10 :tags {:region "US"})
 
 ;; Set the current value of a gauge.
-(gauge! "connections.open" 10 :tags {:system "mysql"})
+(stats/gauge! "connections.open" 10 :tags {:system "mysql"})
 
 ;; Set a value for a histogram.
-(histogram! "profile.rendering" 55)
+(stats/histogram! "profile.rendering" 55)
 
 ;; Add an email to a set of uniques, tagged referral:true.
-(datadog-set! "visitors.unique" "example@mail.com" :tags {:referral "true"})
+(stats/datadog-set! "visitors.unique" "example@mail.com" :tags {:referral "true"})
 
 ;; Submit an event with the title "Deployment", a text description, and
 ;; the alert_type of "success".  Note that for events, the last parameter
 ;; is an actual options map instead of named params.
-(event! "deployment" "A deployment has finished successfully" {:alert_type "success"})
+(stats/event! "deployment" "A deployment has finished successfully" {:alert_type "success"})
 ```
 
 For recording timings, a `time!` macro is provided that will execute the Clojure code passed to it and return the result, while also emitting a timing metric as a side effect.
@@ -66,7 +66,7 @@ For recording timings, a `time!` macro is provided that will execute the Clojure
 ```clojure
 ;; In this example your code will execute and return rows as normal, and the execution time
 ;; in milliseconds will be recorded as a side effect.
-(time! "database.queries.select_all"
+(stats/time! "database.queries.select_all"
   (j/query mysql-db ["SELECT * FROM table"]))
 
 ;; The time! macro can also support optional tags and sample rate, but they must
@@ -74,7 +74,7 @@ For recording timings, a `time!` macro is provided that will execute the Clojure
 ;; you must supply an empty map for the tag parameter.
 
 ;; This timing will be tagged pipeline:api and sampled at a rate of 0.75.
-(time! "controllers.actions.index" {:pipeline "api"} 0.75
+(stats/time! "controllers.actions.index" {:pipeline "api"} 0.75
   ( ... your code to handle the controller action ...))
 ```
 
