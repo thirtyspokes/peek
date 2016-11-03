@@ -2,14 +2,22 @@
   (:use midje.sweet)
   (:require [peek.core :refer :all]
             [clojure.test :refer :all]
-            [clojure.core.async :refer [>!! <!! chan]]
+            [clojure.core.async :refer [>!! <!! >! chan go]]
             [peek.datadog :refer [sampled-send send-udp submit]]))
 
-(let [result (atom nil)]    
-  (with-redefs [sampled-send (fn [packet sample-rate] (reset! result packet))]
-    (fact "time! returns the evaluated body and also emits a packet"
-      (time! "test" (+ 1 1)) => 2
-      @result => truthy)))
+(deftest time!-test
+  "time! records timings but stays out of the way otherwise"
+  (let [ch (chan)]
+    (with-redefs [sampled-send (fn [packet rate] (go (>! ch packet)))]
+      (let [res (time! "test" (+ 2 2))]
+        (is (= 4 res))
+        (is (not (nil? (re-find #"test:\d+\|ms\|@1.0" (<!! ch))))))
+      (let [res (time! "test" {:system "test"} (let [a 2 b 4] (* a b)))]
+        (is (= 8 res))
+        (is (not (nil? (re-find #"test:\d+\|ms\|@1.0\|#system:test" (<!! ch))))))
+      (let [res (time! "test" {:system "test"} 0.75 (map inc [1 2 3 4 5]))]
+        (is (= [2 3 4 5 6] res))
+        (is (not (nil? (re-find #"test:\d+\|ms\|@0.75\|#system:test" (<!! ch)))))))))
 
 (deftest increment-test
   "API methods use options and defaults to build packets"
