@@ -83,7 +83,7 @@ For recording timings, a `time!` macro is provided that will execute the Clojure
 In your project.clj: 
 
 ```
-[thirtyspokes/peek "1.0.0"]
+[thirtyspokes/peek "1.0.1"]
 ```
 
 Or if your desires are *unconventional*:

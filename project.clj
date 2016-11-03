@@ -1,4 +1,4 @@
-(defproject thirtyspokes/peek "1.0.0"
+(defproject thirtyspokes/peek "1.0.1"
   :description "Clojure client for DogStatsD"
   :url "https://github.com/thirtyspokes/peek"
   :license {:name "Eclipse Public License"
